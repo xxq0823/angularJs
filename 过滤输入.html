@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.bootcss.com/angular.js/1.4.6/angular.min.js"></script>
+</head>
+<body>
+​
+<div ng-app="myApp" ng-controller="namesCtrl">
+    ​
+    <p>输入过滤:</p>
+    ​
+    <p><input type="text" ng-model="test"></p>
+    ​
+    <ul>
+        <!--输入框绑定模型名称ng-model="test" ，filter:test 根据输入框输入的值过滤出包含的。是从原始数据中过滤-->
+        <li ng-repeat="x in names | filter:test | orderBy:'country'">
+            {{ (x.name | uppercase) + ', ' + (x.country | reverse)}}
+        </li>
+    </ul>
+    ​
+</div>
+​
+<script>
+    var app = angular.module('myApp', []);
+    app.controller('namesCtrl', function($scope) {
+        $scope.names = [
+            {name:'Jani',country:'Norway'},
+            {name:'Hege',country:'Sweden'},
+            {name:'Kai',country:'Denmark'}
+        ];
+    });
+//    自定义过滤器 reverse，将字符反转
+    app.filter('reverse', function() { //可以注入依赖
+        return function(text) {
+            return text.split("").reverse().join("");
+        }
+    });
+</script>​
+</body>
+</html>

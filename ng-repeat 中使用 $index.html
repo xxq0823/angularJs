@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+</head>
+<body>
+<!--angularjs 对数据的操作都是对原始数据操作后再显示-->
+<!--ng-init="变量=值;变量='值'"  初始化变量的值，有多个变量时，中间用分号隔开；-->
+<div ng-app="myApp" ng-init="items=[
+{name:'Jani',country:'Norway'},
+{name:'Hege',country:'Sweden'},
+{name:'Kai',country:'Denmark'}]">
+
+    <p>循环对象:</p>
+
+    <ul ng-controller="ListCtrl">
+        <!--$index索引指的是原始数据的序号，过滤后的索引(indexs)不匹配原始列表的索引-->
+        <li ng-repeat="item in items | orderBy:'country'">
+            {{ item.name + ', ' + item.country }}
+            <!--<button ng-click="remove($index)">remove</button>-->
+            <button ng-click="remove(item)">remove</button>
+            <!--所以第一行li删的是原始数据的第一个-->
+        </li>
+    </ul>
+
+</div>
+<script>
+
+    var app = angular.module("myApp", []);
+    app.controller('ListCtrl', ['$scope', function($scope) {
+
+//            删除指定索引index的对象
+//        $scope.remove = function(index) {
+//            $scope.items.splice(index,1);
+//        };
+        $scope.remove = function(item) {
+//            删除指定对象item，$.inArray jQuery的方法
+            $scope.items.splice($.inArray(item, $scope.items), 1);
+        };
+    }]);
+   
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.css">
+    <script type="text/javascript" src="https://cdn.bootcss.com/angular.js/1.5.8/angular.js"></script>
+</head>
+<!--ng-app 定义angularJS的使用范围；指令初始化一个 AngularJS 应用程序。定义了程序的根元素-->
+<!--ng-controller 为应用变量添加控制器-->
+<body ng-app="myApp" ng-controller="myCtrl" style="margin:20px;" ng-cloak >
+<div>
+    <label>全选</label>
+    <!--ng-model 定义变量名 指令把元素值（比如输入域的值）绑定到应用程序。-->
+    <!--ng-bind="变量"  绑定变量名，获取该变量的数据。但是一般都用双重花括号来获取变量的值，比如：{{变量}}。-->
+    <input type="checkbox" ng-model="allCheck" ng-click="allChecked()">
+    <!--过滤器 | 格式化数字为货币格式。-->
+    <span>总金额：{{ totalMoney() | currency:"￥"}}</span>
+</div>
+<!--ng-init 初始化应用时创建一个变量-->
+<!--$index 序号，从0开始-->
+<!--ng-repeat 指令对于集合中（数组中）的每个项会 克隆一次 HTML 元素。-->
+<table class="table table-bordered" ng-repeat="item in cart"  ng-init="outerIndex = $index" style="margin:30px auto">
+    <thead>
+    <tr>
+        <th><input type="checkbox" ng-model="item.checked" ng-click="shopChecked(item,cart)"></th>
+        <th colspan="7">{{item.shopName}}</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="kind in item.goods"  ng-init="innerIndex = $index">
+        <td><input type="checkbox" ng-model="kind.checked" ng-click="singleGoods(kind,item.goods,item,cart)"></td>
+        <td>{{kind.goodsName}}</td>
+        <td>{{kind.price}}元/件，共</td>
+        <td><span ng-click="add(kind,item.goods,item,cart)" style="display: inline-block;width:25px;text-align: center; border:1px solid gray;user-select: none;cursor: pointer;">+</span></td>
+        <td>{{kind.number}}</td>
+        <td><span ng-click="reduce(kind,item.goods,item,cart)" style="display: inline-block;width:25px;text-align: center; border:1px solid gray;user-select: none;cursor: pointer;">-</span></td>
+        <td>件,本商品共: {{kind.singleMoney}}元</td>
+        <td ng-click="delete(innerIndex,outerIndex,item,cart)" style="user-select: none;cursor: pointer;">删除</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
+
+<script>
+    var myApp = angular.module("myApp", []);
+    myApp.controller("myCtrl", function ($scope) {
+        $scope.cart = [
+            {
+                "shopName": "专卖店一：固始鸡",
+                "checked": false,
+                "goods": [
+                    {
+                        "goodsName": "笨鸡蛋1",
+                        "picture": "images/cart_01.jpg",
+                        "price": 150.00,
+                        "number": 1,
+                        "singleMoney":150.00,
+                        "checked": false
+                    },
+                    {
+                        "goodsName": "笨鸡蛋2",
+                        "picture": "images/cart_02.jpg",
+                        "price": 119.00,
+                        "number": 1,
+                        "singleMoney":119.00,
+                        "checked": false
+                    },
+                    {
+                        "goodsName": "笨鸡蛋3",
+                        "picture": "images/cart_03.jpg",
+                        "price": 101.00,
+                        "number": 1,
+                        "singleMoney":101.00,
+                        "checked": false
+                    }
+                ]
+            },
+            {
+                "shopName": "专卖店二：固始鸭",
+                "checked": false,
+                "goods": [
+                    {
+                        "goodsName": "固始鸭1",
+                        "picture": "images/cart_04.jpg",
+                        "price": 89.00,
+                        "number": 1,
+                        "singleMoney":89.00,
+                        "checked": false
+                    },
+                    {
+                        "goodsName": "固始鸭2",
+                        "picture": "images/cart_05.jpg",
+                        "price": 99.00,
+                        "number": 1,
+                        "singleMoney":99.00,
+                        "checked": false
+                    }
+                ]
+            },
+            {
+                "shopName": "专卖店三：固始鹅",
+                "checked": false,
+                "goods": [
+                    {
+                        "goodsName": "固始鹅1",
+                        "picture": "images/cart_06.jpg",
+                        "price": 289.00,
+                        "number": 1,
+                        "singleMoney":289.00,
+                        "checked": false
+                    }
+                ]
+            }
+
+        ];
+        //点击加减按钮，数量加减;点击删除按钮，删除商品
+        $scope.reduce = function (goods, itemGoods, item ,cart) {
+            goods.number--;
+            if (goods.number <= 1) goods.number = 1;
+            goods.singleMoney=goods.price*goods.number;
+            goods.checked=true;
+            $scope.singleGoods(goods, itemGoods, item ,cart);
+        };
+        $scope.add = function (goods, itemGoods, item ,cart) {
+            goods.number++;
+            goods.singleMoney=goods.price*goods.number;
+            goods.checked=true;
+            $scope.singleGoods(goods, itemGoods, item ,cart);
+        };
+        //删除该件商品
+        $scope.delete=function(innerIndex,outerIndex,item,cart){
+            item.goods.splice(innerIndex,1);
+            if(item.goods.length<=0){
+                cart.splice(outerIndex,1);
+            }
+        };
+        /*所有商品总金额计算*/
+        $scope.totalMoney = function () {
+            var total = 0;
+            angular.forEach($scope.cart, function (outerItem) {
+                angular.forEach(outerItem.goods, function (innerItem) {
+                    if (innerItem.checked) {
+                        total += innerItem.price * innerItem.number;
+                    }
+                });
+            });
+            return total;
+        };
+        /*单件商品选择*/
+        $scope.singleGoods = function (kind, itemGoods, item ,cart) {
+            var flag = true;
+            if (kind.checked) {
+                angular.forEach(itemGoods,function (innerItem) {
+                    if (innerItem.checked == false) {
+                        flag = false;
+                    }
+                });
+            } else {
+                $scope.allCheck=false;
+                item.checked = false;
+                flag = false;
+            }
+            if (flag) {
+                item.checked = true;
+                angular.forEach(cart,function (outerItem) {
+                    if(outerItem.checked == false){
+                        flag=false;
+                    }
+                });
+            }
+            if (flag) {
+                $scope.allCheck = true;
+            }
+        };
+        /*单家商铺选择*/
+        $scope.shopChecked = function (item,cart) {
+            if (item.checked) {
+                var flag=true;
+                angular.forEach(item.goods,function (innerItem) {
+                    innerItem.checked = true;
+                });
+                angular.forEach(cart,function (outerItem) {
+                    if(outerItem.checked == false){
+                        flag=false;
+                    }
+                });
+                if(flag){
+                    $scope.allCheck = true;
+                }
+            } else {
+                $scope.allCheck=false;
+                angular.forEach(item.goods,function (innerItem) {
+                    innerItem.checked = false;
+                });
+            }
+        };
+        /*全部商铺商品选择*/
+        $scope.allChecked = function () {
+            console.log($scope.allCheck);
+            if ($scope.allCheck) {
+                angular.forEach($scope.cart,function (item) {
+                    item.checked = true;
+                    angular.forEach(item.goods,function (innerItem) {
+                        innerItem.checked = true;
+                    })
+                });
+            } else {
+                angular.forEach($scope.cart,function (item) {
+                    item.checked = false;
+                    angular.forEach(item.goods,function (innerItem) {
+                        innerItem.checked = false;
+                    })
+                });
+            }
+        };
+    })
+</script>

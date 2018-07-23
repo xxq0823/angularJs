@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.bootcss.com/angular.js/1.4.6/angular.min.js"></script>
+</head>
+<style>
+    div{margin-top: 15px;border: 2px solid rebeccapurple;width: 400px;}
+</style>
+<body ng-app="myApp">
+    <div>
+        <h3>我是全局变量language: {{ language}}</h3>
+    </div>
+    <div ng-controller="oneController">
+        <h3>我是one_language局部变量: {{ one_language}}</h3>
+    </div>
+    <div ng-controller="twoController">
+        <h1>twoController</h1>
+        <h3>我是two_language局部变量: {{ two_language }}</h3>
+        <h3>我是one_language局部变量: {{ one_language}}  ，获取不到别的控制器上的变量</h3>
+        <h3>我是全局变量language: {{ language }} 。全局变量都可以调用</h3>
+    </div>
+
+<script>
+    var myApp = angular.module('myApp', []);
+    //    Scope(作用域) 是应用在 HTML (视图) 和 JavaScript (控制器)之间的纽带。
+    //    Scope 是一个对象，有可用的方法和属性。可当做参数传递
+    //    Scope 可应用在视图和控制器上。
+
+//    创建oneController和twoController这两个controller
+//    oneController传入$scope和$rootScope
+    myApp.controller('oneController', ['$scope', '$rootScope', function ($scope, $rootScope) {
+        // 局部的变量，只有在oneController中才会显示
+        $scope.one_language = 'Python';
+
+        // 全局的变量，都可以调用
+        $rootScope.language = 'Go';
+    }]);
+//    twoController只传入$scope
+    myApp.controller('twoController', ['$scope', function ($scope) {
+        // 局部的变量，只有在twoController中才会显示
+        $scope.two_language = 'Java';
+    }]);
+</script>
+
+<p>注意 $rootScope 在循环对象内外都可以访问。</p>
+
+</body>
+</html>

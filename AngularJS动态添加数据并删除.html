@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="App">
+<head>
+    <meta charset="UTF-8">
+    <title>TodoList</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .todo {
+            width: 300px;
+            margin: 100px auto;
+        }
+
+        .todo dd {
+            overflow: hidden;
+        }
+
+        .todo input[type="checkbox"] {
+            float: left;
+        }
+
+        .todo a {
+            float: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="todo" ng-controller="TodoListController">
+    <form ng-submit="addItem()">
+        <label for="">添加事项</label>
+        <input type="text" ng-model="todo">
+    </form>
+    <dl>
+        <dt>待办事项</dt>
+        <!--todos输入的待办事项数组-->
+        <!--加上track by $index相当于给重复数据加上了序号，重复的数据就相当于不重复了。-->
+        <dd ng-repeat="todo in todos track by $index">
+            <input type="checkbox" ng-checked="todo.checked" ng-click="done($index, $event)">
+            {{todo.text}}
+            <a ng-href="" ng-click="delete($index, todos)">删除</a>
+        </dd>
+        <dt>已办事项{{doneTodos.length}}</dt>
+        <dd ng-repeat="todo in doneTodos track by $index">
+            <input type="checkbox" ng-checked="todo.checked" ng-click="undone($index, $event)">
+            {{todo.text}}
+            <a ng-href="" ng-click="delete($index, doneTodos)">删除</a>
+        </dd>
+    </dl>
+</div>
+
+<script src="https://cdn.bootcss.com/angular.js/1.4.6/angular.min.js"></script>
+<script>
+    // 定义一个模块
+    var App = angular.module('App', []);
+
+    // 定义一个控制器
+    App.controller('TodoListController', ['$scope', function($scope) {
+
+        // 待办事项
+        $scope.todos = [];
+
+        // 已完成事项
+        $scope.doneTodos = [];
+
+        // $scope.todo = '';
+
+        // 回车时调用ng-submit，往待办事项中添加数据
+        $scope.addItem = function () {
+            // 向数组中添加数据
+            $scope.todos.push({text:$scope.todo, checked: false});
+            console.log($scope.todos);
+            // 清空输入框
+            $scope.todo = '';
+        };
+
+        // 勾选时完成
+        $scope.done = function (index, ev) {
+            // console.log(index);
+
+            // console.log($scope.todos);
+
+            // 从待办事项中删除 tmp是一个数组
+            var tmp = $scope.todos.splice(index, 1);
+
+            tmp[0].checked = !tmp[0].checked;
+            // 将删除的事项添加到已完成里
+//            concat() 方法用于连接两个或多个数组。该方法不会改变现有的数组，而仅仅会返回被连接数组的一个副本。
+//            $scope.doneTodos = $scope.doneTodos.concat(tmp);
+            //用push方法是向数组的末尾添加一个或多个元素，并返回新的长度
+            $scope.doneTodos.push(tmp[0]);
+            console.log($scope.doneTodos);
+            ev.preventDefault();
+        };
+
+        // 取消已完成
+        $scope.undone = function (index, ev) {
+            // 从已完成数据中删除
+            var tmp = $scope.doneTodos.splice(index, 1);
+
+            tmp[0].checked = !tmp[0].checked;
+
+            // 将事项添加到待办事项中
+            $scope.todos = $scope.todos.concat(tmp);
+
+            // ev.preventDefault();
+
+        };
+
+        // 删除事项，传递当前索引和完整数据
+        $scope.delete = function (index, todos) {
+            // $scope.doneTodos.splice(index, 1);
+
+            // console.log(todos);
+            // 删除索引值对应的事项
+            todos.splice(index, 1);
+        }
+    }]);
+
+    // var arr = [0, 1, 2, 3, 4];
+
+    // arr.splice(2,1)
+
+</script>
+</body>
+</html>
