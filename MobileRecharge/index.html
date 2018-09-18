@@ -1,0 +1,369 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>封天纪-H5充值</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache,must-revalidate">
+	<meta http-equiv="expires" content="0">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="stylesheet" href="static/css/base.css">
+	<script type="text/javascript" src="https://cdn.bootcss.com/angular.js/1.5.8/angular.js"></script>
+</head>
+<body>
+	<form ng-app="myApp" ng-controller="validateCtrl" name="myForm">
+		<section class="g-content">
+			<div class="m-recharge-title">
+				<article>
+					<p>游戏区服：<span   ng-init="game_id = 100">天地诸神1</span>-<span ng-init="server_id = 50" >331服</span></p>
+					<p ng-init="vip_rank = 1">充值账号：<span   ng-init="user = 'qq_984746119'">{{user}}</span></p>
+					<!--<p>-->
+					<!--<label>选择角色：</label>-->
+					<!--<select>-->
+					<!--<option>角色1</option>-->
+					<!--<option>角色2</option>-->
+					<!--<option>角色3</option>-->
+					<!--</select>-->
+					<!--</p>-->
+				</article>
+				<img  src="static/images/2217logo.png" />
+
+			</div>
+
+			<div class="m-recharge-list-num">
+				<ul>
+					<!--循环遍历li各项充值数据-->
+					<li ng-repeat="item in recharge track by $index"  ng-init="outerIndex = $index">
+						<article ng-repeat="kind in item.list track by $index"  ng-init="innerIndex = $index">
+							<button class="btn" type="button"  ng-class="{on:kind.checked}" ng-click="choose(kind.num,kind)">{{kind.num}}元</button>
+						</article>
+					</li>
+					<li>
+						<article>
+							<button class="btn" type="button" ng-init="check = false" ng-class="{on:check}" ng-click="choose(50000,null)">50000元</button>
+						</article>
+						<article class="flex2">
+							<input type="text" name="number" class="text" ng-model="rechargeNum" ng-change="change()"/>
+							<span  ng-init="tip = false"  ng-hide="tip">任意金额,上限1000000</span>
+							<span style="color:red"  ng-show="myForm.number.$error.number">请输入整数~</span>
+							<span style="color:red"  ng-init="outVar = flase"  ng-show="outVar">不能超过上限1000000哦~</span>
+						</article>
+					</li>
+				</ul>
+			</div>
+			<div class="m-recharge-info">
+				<p class="recharge-num">支付现金：<span><span id="rechargeNum" ng-init="rechargeNum = 100">{{ rechargeNum | currency:"￥"}}</span>元</span></p>
+				<p ng-init="exchange_ratio = 1">您将获得砖石：<span  ng-init="game_currency = 0">{{game_currency}}</span>个</p>
+				<p class="rebate" ng-init="myVar = true" ng-hide="myVar">预计额外获取返利：<span  ng-init="rebate = 0">{{ rebate | currency:"￥"}}</span>元</p>
+			</div>
+		</section>
+		<section class="g-btn">
+			<button class="m-default-btn"  ng-init="send = 0" ng-click="submit()">
+				<span class="text">立即充值</span>
+				<img class="load" ng-init="loadShow = flase"  ng-show="loadShow" src="http://static.2217.com/plat/www/h5/images/loading.gif" style="vertical-align:text-bottom;width:2rem;height:2rem;">
+			</button>
+		</section>
+	</form>
+
+<script>
+	var myApp = angular.module("myApp", []);
+	myApp.controller("validateCtrl", function ($scope) {
+		$scope.recharge = [
+			{
+				"list": [
+					{
+						"checked": false,
+						"num": "10"
+					},
+					{
+						"checked": false,
+						"num": "20"
+					},
+					{
+						"checked": false,
+						"num": "50"
+					}
+				]
+			},
+			{
+				"list": [
+					{
+						"checked": true,
+						"num": "100"
+					},
+					{
+						"checked": false,
+						"num": "200"
+					},
+					{
+						"checked": false,
+						"num": "500"
+					}
+				]
+			},
+			{
+				"list": [
+					{
+						"checked": false,
+						"num": "1000"
+					},
+					{
+						"checked": false,
+						"num": "5000"
+					},
+					{
+						"checked": false,
+						"num": "10000"
+					}
+				]
+			}
+
+		];
+//		选择充值金额
+		$scope.choose = function (num,kind) {
+			// 循环遍历其他取消选中
+			angular.forEach($scope.recharge, function (outerItem) {
+				angular.forEach(outerItem.list, function (innerItem) {
+					innerItem.checked = false;
+				});
+			});
+//			最后一行50000的按钮取消选中
+			$scope.check=false;
+//			错误输入提示隐藏
+			$scope.outVar=false;
+			$scope.tip=false;
+			$scope.rechargeNum=num;
+//			最后一行50000的按钮不是遍历json数据得来的，没有kind.cheched属性，给他自定义了一个check变量
+			if(kind!=null){
+				kind.checked=true;
+			}else{
+				$scope.check=true;
+			}
+			$scope.countCoinAndRebate($scope.rechargeNum);
+		};
+//		输入充值金额
+		$scope.change = function () {
+			$scope.checkInput();
+			// 循环遍历取消选中
+			angular.forEach($scope.recharge, function (outerItem) {
+				angular.forEach(outerItem.list, function (innerItem) {
+					innerItem.checked = false;
+				});
+			});
+			$scope.check=false;
+		};
+		$scope.checkInput=function () {
+			var tt=/^\d+$/g;
+			if(tt.test($scope.rechargeNum)){
+//				alert(' 正整数');
+				if(parseInt($scope.rechargeNum)<1000001){
+					$scope.countCoinAndRebate($scope.rechargeNum);
+					$scope.outVar=false;
+					$scope.tip=false;
+
+				}else{
+					popupBottomTips("你输入的金额超过上限1000000");
+					$scope.rechargeNum=1000000;
+					$scope.outVar=true;
+					$scope.tip=true;
+					return false;
+				}
+			}else{
+				popupBottomTips("请输入正整数~");
+				return false;
+			}
+		};
+		//充值金额计算获得相应游戏币和返利
+		$scope.countCoinAndRebate = function (rechargeNum) {
+
+			$scope.game_currency=rechargeNum*parseInt($scope.exchange_ratio);
+			$scope.rebate = 0;
+			if($scope.vip_rank>0&&$scope.vip_rank<4){
+				$scope.rebate += $scope.vip_rank;
+			}else if($scope.vip_rank==4){
+				$scope.rebate += 5;
+			}else if($scope.vip_rank==5){
+				$scope.rebate += 7;
+			}else if($scope.vip_rank==6){
+				$scope.rebate += 8;
+			}else if($scope.vip_rank==7){
+				$scope.rebate += 10;
+			}else if($scope.vip_rank==8){
+				$scope.rebate += 12;
+			}else if($scope.vip_rank==9){
+				$scope.rebate += 15;
+			}else if($scope.vip_rank==10){
+				$scope.rebate += 20;
+			}
+			if (100>rechargeNum && rechargeNum>=50){
+				$scope.rebate += 5;
+			}else if(300>rechargeNum && rechargeNum>=100){
+				$scope.rebate += 15;
+			}else if(500>rechargeNum && rechargeNum>=300){
+				$scope.rebate += 20;
+			}else if(1000>rechargeNum && rechargeNum>=500){
+				$scope.rebate += 25;
+			}else if(2000>rechargeNum && rechargeNum>=1000){
+				$scope.rebate += 30;
+			}else if(5000>rechargeNum && rechargeNum>=2000){
+				$scope.rebate += 40;
+			}else if(10000>rechargeNum && rechargeNum>=5000){
+				$scope.rebate += 45;
+			}else if(rechargeNum>=10000){
+				$scope.rebate += 50;
+			}
+			$scope.rebate=rechargeNum*$scope.rebate/100;
+			if ($scope.rebate<=0){
+				$scope.myVar=true;
+			}else{
+				$scope.myVar = false;
+			}
+
+		};
+
+		angular.element(window).bind('load', function() {
+			alert(1);
+			$scope.countCoinAndRebate = function (rechargeNum) {
+
+				$scope.game_currency=rechargeNum*parseInt($scope.exchange_ratio);
+				$scope.rebate = 0;
+				if($scope.vip_rank>0&&$scope.vip_rank<4){
+					$scope.rebate += $scope.vip_rank;
+				}else if($scope.vip_rank==4){
+					$scope.rebate += 5;
+				}else if($scope.vip_rank==5){
+					$scope.rebate += 7;
+				}else if($scope.vip_rank==6){
+					$scope.rebate += 8;
+				}else if($scope.vip_rank==7){
+					$scope.rebate += 10;
+				}else if($scope.vip_rank==8){
+					$scope.rebate += 12;
+				}else if($scope.vip_rank==9){
+					$scope.rebate += 15;
+				}else if($scope.vip_rank==10){
+					$scope.rebate += 20;
+				}
+				if (100>rechargeNum && rechargeNum>=50){
+					$scope.rebate += 5;
+				}else if(300>rechargeNum && rechargeNum>=100){
+					$scope.rebate += 15;
+				}else if(500>rechargeNum && rechargeNum>=300){
+					$scope.rebate += 20;
+				}else if(1000>rechargeNum && rechargeNum>=500){
+					$scope.rebate += 25;
+				}else if(2000>rechargeNum && rechargeNum>=1000){
+					$scope.rebate += 30;
+				}else if(5000>rechargeNum && rechargeNum>=2000){
+					$scope.rebate += 40;
+				}else if(10000>rechargeNum && rechargeNum>=5000){
+					$scope.rebate += 45;
+				}else if(rechargeNum>=10000){
+					$scope.rebate += 50;
+				}
+				$scope.rebate=rechargeNum*$scope.rebate/100;
+				if ($scope.rebate<=0){
+					$scope.myVar=true;
+				}else{
+					$scope.myVar = false;
+				}
+
+			};
+			$scope.countCoinAndRebate(100);
+		});
+//		提交充值
+		$scope.submit = function () {
+			// 禁用按钮防止重复提交
+			if($scope.send==1){
+				popupBottomTips("正在处理，请勿重复提交");
+				return false;
+			}
+
+			//	验证输入任意金额
+			$scope.checkInput();
+			if($scope.rechargeNum==0){
+				popupBottomTips("请选择或输入充值金额");
+				return false;
+			}
+			$scope.send=1;
+			$scope.loadShow=true;
+			$http({
+				method:'post',
+				url:'/addCar',
+				dataType: "json",
+				data:{'user':$scope.user,'game_id':$scope.game_id,'server_id':$scope.server_id,'rechargeNum':$scope.rechargeNum},
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded'
+				}
+			}).then(function(data){
+				console.log('post success');
+				if (data.status == "1") {
+
+					//微信支付
+					function onBridgeReady(){
+						WeixinJSBridge.invoke(
+								'getBrandWCPayRequest', {
+									"appId":"wx2421b1c4370ec43b",     //公众号名称，由商户传入
+									"timeStamp":"1395712654",         //时间戳，自1970年以来的秒数
+									"nonceStr":"e61463f8efa94090b1f366cccfbbb444", //随机串
+									"package":"prepay_id=u802345jgfjsdfgsdg888",
+									"signType":"MD5",         //微信签名方式：
+									"paySign":"70EA570631E4BB79628FBCA90534C63FF7FADD89" //微信签名
+								},
+								function(res){
+									if(res.err_msg == "get_brand_wcpay_request:ok" ){
+										// 使用以上方式判断前端返回,微信团队郑重提示：
+										//res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+									}
+								});
+					}
+					if (typeof WeixinJSBridge == "undefined"){//是否是微信平台
+						if( document.addEventListener ){//火狐
+							document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+						}else if (document.attachEvent){//IE
+							document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
+							document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+						}
+					}else{
+						onBridgeReady();
+					}
+
+				} else{
+				}
+				$scope.send=0;
+				$scope.loadShow=false;
+
+			},function(data){
+				console.log('post error');
+			});
+
+
+
+		}
+
+
+	})
+
+</script>
+<script src="static/js/zepto.min.js"></script>
+<script src="static/js/fx.js"></script>
+<script>
+
+	//底部信息提示
+	function popupBottomTips(tips){
+		htl = '<div class="m-popup-bottom-tips"><div class="m-popup-bottom-tips-message">'+ tips +'</div></div>';
+		$("html").append(htl);
+		$(".m-popup-bottom-tips").animate({bottom:"5rem"},200,"ease-in");
+		setTimeout(function(){
+			$(".m-popup-bottom-tips").animate({
+				opacity: "hide"
+			},"slow",function(){
+				$(".m-popup-bottom-tips").remove();
+			});
+		},3000);
+	}
+</script>
+</body>
+</html>

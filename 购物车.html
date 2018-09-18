@@ -20,7 +20,8 @@
 <!--ng-init 初始化应用时创建一个变量-->
 <!--$index 序号，从0开始-->
 <!--ng-repeat 指令对于集合中（数组中）的每个项会 克隆一次 HTML 元素。-->
-<table class="table table-bordered" ng-repeat="item in cart"  ng-init="outerIndex = $index" style="margin:30px auto">
+<!--循环遍历购物车cart json数组里的每一个店 item-->
+<table class="table table-bordered" ng-repeat="item in cart track by $index"  ng-init="outerIndex = $index" style="margin:30px auto">
     <thead>
     <tr>
         <th><input type="checkbox" ng-model="item.checked" ng-click="shopChecked(item,cart)"></th>
@@ -28,7 +29,8 @@
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="kind in item.goods"  ng-init="innerIndex = $index">
+    <!--循环遍历店里的商品 item.goods里的每一个商品 kind-->
+    <tr ng-repeat="kind in item.goods track by $index"  ng-init="innerIndex = $index">
         <td><input type="checkbox" ng-model="kind.checked" ng-click="singleGoods(kind,item.goods,item,cart)"></td>
         <td>{{kind.goodsName}}</td>
         <td>{{kind.price}}元/件，共</td>
@@ -118,6 +120,7 @@
         //点击加减按钮，数量加减;点击删除按钮，删除商品
         $scope.reduce = function (goods, itemGoods, item ,cart) {
             goods.number--;
+//            最少值设置为1
             if (goods.number <= 1) goods.number = 1;
             goods.singleMoney=goods.price*goods.number;
             goods.checked=true;
@@ -125,13 +128,16 @@
         };
         $scope.add = function (goods, itemGoods, item ,cart) {
             goods.number++;
+//            计算该商品总价
             goods.singleMoney=goods.price*goods.number;
             goods.checked=true;
             $scope.singleGoods(goods, itemGoods, item ,cart);
         };
         //删除该件商品
         $scope.delete=function(innerIndex,outerIndex,item,cart){
+            console.log(innerIndex);
             item.goods.splice(innerIndex,1);
+            console.log(item.goods.length);
             if(item.goods.length<=0){
                 cart.splice(outerIndex,1);
             }
@@ -139,7 +145,9 @@
         /*所有商品总金额计算*/
         $scope.totalMoney = function () {
             var total = 0;
+//            循环遍历每一家商铺
             angular.forEach($scope.cart, function (outerItem) {
+//                循环遍历每一个商品
                 angular.forEach(outerItem.goods, function (innerItem) {
                     if (innerItem.checked) {
                         total += innerItem.price * innerItem.number;
@@ -151,36 +159,49 @@
         /*单件商品选择*/
         $scope.singleGoods = function (kind, itemGoods, item ,cart) {
             var flag = true;
+//            单个商品选中时
             if (kind.checked) {
+//                循环遍历该商铺的商品，查找属性checked，有商品没选中时记住 flag=false
                 angular.forEach(itemGoods,function (innerItem) {
                     if (innerItem.checked == false) {
                         flag = false;
                     }
                 });
+//                单个商品没选中时
             } else {
+//                取消外面全选
                 $scope.allCheck=false;
+//                取消该商铺勾选
                 item.checked = false;
                 flag = false;
             }
+//            该商铺的商品都选中时
             if (flag) {
+//                该商铺勾选
                 item.checked = true;
+//                循环遍历购物车每个商铺，查找属性checked，有商铺没选中时记住 flag=false
                 angular.forEach(cart,function (outerItem) {
                     if(outerItem.checked == false){
                         flag=false;
                     }
                 });
             }
+//            商铺商品都选中时
             if (flag) {
+//                外层全选
                 $scope.allCheck = true;
             }
         };
         /*单家商铺选择*/
         $scope.shopChecked = function (item,cart) {
+//            如果商铺选择
             if (item.checked) {
                 var flag=true;
+//                循环遍历该商铺的商品，给商品属性checked设为true 勾选
                 angular.forEach(item.goods,function (innerItem) {
                     innerItem.checked = true;
                 });
+ //                循环遍历购物车里的每个商铺，查找属性checked，为false时说明没有选中商铺，外面的全选不勾选
                 angular.forEach(cart,function (outerItem) {
                     if(outerItem.checked == false){
                         flag=false;
@@ -189,8 +210,10 @@
                 if(flag){
                     $scope.allCheck = true;
                 }
+//                商铺没有选择
             } else {
                 $scope.allCheck=false;
+//                循环遍历该商铺的其他商品，设置不勾选
                 angular.forEach(item.goods,function (innerItem) {
                     innerItem.checked = false;
                 });
@@ -198,15 +221,18 @@
         };
         /*全部商铺商品选择*/
         $scope.allChecked = function () {
-            console.log($scope.allCheck);
+//            如果商铺商品全选中
             if ($scope.allCheck) {
+//                循环遍历每个商铺每个商品，设置选中
                 angular.forEach($scope.cart,function (item) {
                     item.checked = true;
                     angular.forEach(item.goods,function (innerItem) {
                         innerItem.checked = true;
                     })
                 });
+//            如果商铺商品没全选中
             } else {
+ //                循环遍历每个商铺每个商品，取消选中
                 angular.forEach($scope.cart,function (item) {
                     item.checked = false;
                     angular.forEach(item.goods,function (innerItem) {

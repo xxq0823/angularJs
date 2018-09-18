@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>封天纪-H5充值</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache,must-revalidate">
+	<meta http-equiv="expires" content="0">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="stylesheet" href="static/css/base.css">
+</head>
+<style>
+	#submit .load{}
+</style>
+<body>
+<section class="g-content">
+	<div class="m-recharge-title">
+		<article>
+			<p>游戏区服：<span id="game" game-id="100" >天地诸神</span>-<span id="server" server-id="50">331服</span></p>
+			<p>充值账号：<span id="user" vip_rank="1">qq_984746119</span></p>
+			<!--<p>-->
+				<!--<label>选择角色：</label>-->
+				<!--<select>-->
+					<!--<option>角色1</option>-->
+					<!--<option>角色2</option>-->
+					<!--<option>角色3</option>-->
+				<!--</select>-->
+			<!--</p>-->
+		</article>
+		<img  src="static/images/2217logo.png" />
+	</div>
+	<div class="m-recharge-list-num">
+		<ul>
+			<li>
+				<article>
+					<button class="btn" type="button" num="10" >10元</button>
+				</article>
+				<article>
+					<button class="btn" type="button" num="20" >20元</button>
+				</article>
+				<article>
+					<button class="btn" type="button" num="50" >50元</button>
+				</article>
+			</li>
+			<li>
+				<article>
+					<button class="btn on" type="button" num="100" >100元</button>
+				</article>
+				<article>
+					<button class="btn" type="button" num="200" >200元</button>
+				</article>
+				<article>
+					<button class="btn" type="button" num="500" >500元</button>
+				</article>
+			</li>
+			<li>
+				<article>
+					<button class="btn" type="button" num="1000" >1000元</button>
+				</article>
+				<article>
+					<button class="btn" type="button" num="5000" >5000元</button>
+				</article>
+				<article>
+					<button class="btn" type="button" num="10000" >10000元</button>
+				</article>
+			</li>
+			<li>
+				<article>
+					<button class="btn" type="button" num="50000" >50000元</button>
+				</article>
+				<article class="flex2">
+					<input type="text" class="text"/>
+					<span>任意金额,上限1000000</span>
+				</article>
+			</li>
+		</ul>
+	</div>
+	<div class="m-recharge-info">
+		<p class="recharge-num">支付现金：<span><span id="rechargeNum">0</span>元</span></p>
+		<p>您将获得砖石：<span id="game-currency" exchange-ratio="1">0</span>个</p>
+		<p class="rebate">预计额外获取返利：<span id="rebate">0</span>元</p>
+	</div>
+</section>
+<section class="g-btn">
+	<button class="m-default-btn" type="button" id="submit">立即充值<span class="load hide"></span></button>
+</section>
+<script src="static/js/zepto.min.js"></script>
+<script src="static/js/fx.js"></script>
+<script>
+	//	选择充值金额
+	var inputNum;
+	//	默认选中100
+	var rechargeNum=100;
+	countCoinAndRebate(100);
+	$(".m-recharge-list-num").on("tap","button.btn",function (e) {
+		e.preventDefault();
+//		清除输入的金额
+		$(this).closest("ul").find("input.text").val("");
+		$(this).closest("ul").find("button.btn").removeClass("on");
+		$(this).addClass("on");
+		rechargeNum=parseInt($(this).attr("num"));
+		countCoinAndRebate(rechargeNum);
+	});
+	//输入任意金额获取焦点
+	$(".m-recharge-list-num").on("focus","input.text",function (e) {
+		e.preventDefault();
+		//	清掉选择的金额
+		$(this).closest("ul").find("button.btn").removeClass("on");
+		rechargeNum=0;
+		countCoinAndRebate(rechargeNum);
+	});
+	//	验证输入任意金额
+	$(".m-recharge-list-num").on("blur","input.text",function (e) {
+		e.preventDefault();
+		inputNum=$(".m-recharge-list-num li input.text").val();
+		if(inputNum!=""){
+			inputNum=Number(inputNum);
+			if(!(typeof inputNum === 'number' && inputNum%1 === 0)){
+				popupBottomTips("请输入整数的金额");
+				return false;
+			}else{
+				rechargeNum=inputNum;
+				countCoinAndRebate(rechargeNum);
+
+			}
+		}
+	});
+
+	//充值金额计算获得相应游戏币和返利
+	function countCoinAndRebate(rechargeNum) {
+		$("#rechargeNum").text(rechargeNum);
+		var vip_rank=parseInt($("#user").attr("vip_rank"));
+		var exchange_ratio=parseInt($("#game-currency").attr("exchange-ratio"));
+		$("#game-currency").text(rechargeNum*exchange_ratio);
+		var rebate = 0;
+//		rebate = parseInt(rebate);
+		if(vip_rank>0&&vip_rank<4){
+			rebate += vip_rank;
+		}else if(vip_rank==4){
+			rebate += 5;
+		}else if(vip_rank==5){
+			rebate += 7;
+		}else if(vip_rank==6){
+			rebate += 8;
+		}else if(vip_rank==7){
+			rebate += 10;
+		}else if(vip_rank==8){
+			rebate += 12;
+		}else if(vip_rank==9){
+			rebate += 15;
+		}else if(vip_rank==10){
+			rebate += 20;
+		}
+		if (100>rechargeNum && rechargeNum>=50){
+			rebate += 5;
+		}else if(300>rechargeNum && rechargeNum>=100){
+			rebate += 15;
+		}else if(500>rechargeNum && rechargeNum>=300){
+			rebate += 20;
+		}else if(1000>rechargeNum && rechargeNum>=500){
+			rebate += 25;
+		}else if(2000>rechargeNum && rechargeNum>=1000){
+			rebate += 30;
+		}else if(5000>rechargeNum && rechargeNum>=2000){
+			rebate += 40;
+		}else if(10000>rechargeNum && rechargeNum>=5000){
+			rebate += 45;
+		}else if(rechargeNum>=10000){
+			rebate += 50;
+		}
+		if (rebate<=0){
+			$("#rebate").closest("p").hide();
+		}else{
+			$("#rebate").closest("p").show();
+		}
+		$("#rebate").text(rechargeNum*rebate/100);
+	}
+	//立即充值
+	var send=0;
+	$(".g-btn").find(".m-default-btn").on("tap",function(e){
+		e.preventDefault();
+		// 禁用按钮防止重复提交
+		if(send==1){
+			popupBottomTips("正在处理，请勿重复提交");
+			return false;
+		}
+		var user=$("#user").text();
+		var game_id=$("#game").attr("game-id");
+		var server_id=$("#server").attr("server-id");
+		//	验证输入任意金额
+		inputNum=$(".m-recharge-list-num li input.text").val();
+		if(inputNum!=""){
+			inputNum=Number(inputNum);
+			if(!(typeof inputNum === 'number' && inputNum%1 === 0)){
+				popupBottomTips("请输入整数的金额");
+				return false;
+			}else{
+				rechargeNum=inputNum;
+				countCoinAndRebate(rechargeNum);
+			}
+		}
+		if(rechargeNum==""){
+			popupBottomTips("请选择或输入充值金额");
+			return false;
+		}
+		 $.ajax({
+		 	 type: "POST",
+		 	 url: "",
+		 	 dataType: "json",
+			 data:{'user':user,'game_id':game_id,'server_id':server_id,'rechargeNum':rechargeNum},
+			async: true,
+			beforeSend: function () {
+				// 提交状态
+				send=1;
+				$("#submit").html('立即充值<img src="static/images/loading.gif" style="vertical-align:text-bottom;width:2rem;height:2rem;">');
+			},
+			success: function(data){
+				if (data.status == "1") {
+
+					//微信支付
+					function onBridgeReady(){
+						WeixinJSBridge.invoke(
+								'getBrandWCPayRequest', {
+									"appId":"wx2421b1c4370ec43b",     //公众号名称，由商户传入
+									"timeStamp":"1395712654",         //时间戳，自1970年以来的秒数
+									"nonceStr":"e61463f8efa94090b1f366cccfbbb444", //随机串
+									"package":"prepay_id=u802345jgfjsdfgsdg888",
+									"signType":"MD5",         //微信签名方式：
+									"paySign":"70EA570631E4BB79628FBCA90534C63FF7FADD89" //微信签名
+								},
+								function(res){
+									if(res.err_msg == "get_brand_wcpay_request:ok" ){
+										// 使用以上方式判断前端返回,微信团队郑重提示：
+										//res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+									}
+								});
+					}
+					if (typeof WeixinJSBridge == "undefined"){//是否是微信平台
+						if( document.addEventListener ){//火狐
+							document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+						}else if (document.attachEvent){//IE
+							document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
+							document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+						}
+					}else{
+						onBridgeReady();
+					}
+
+				} else{
+				}
+			},
+			complete: function () {
+				send=0;
+				$("#submit").html('立即充值')
+			},
+			error: function() {
+				//
+			}
+		 })
+	});
+
+	//底部信息提示
+	function popupBottomTips(tips){
+		htl = '<div class="m-popup-bottom-tips"><div class="m-popup-bottom-tips-message">'+ tips +'</div></div>';
+		$("html").append(htl);
+		$(".m-popup-bottom-tips").animate({bottom:"5rem"},200,"ease-in");
+		setTimeout(function(){
+			$(".m-popup-bottom-tips").animate({
+				opacity: "hide"
+			},"slow",function(){
+				$(".m-popup-bottom-tips").remove();
+			});
+		},3000);
+	}
+
+</script>
+</body>
+</html>
